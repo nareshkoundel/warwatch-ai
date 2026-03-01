@@ -63,6 +63,7 @@
 }
 
 .tab-panel { flex: 1; overflow: hidden; }
+#tabStats  { overflow-y: auto; }
 
 /* ================================================
    THREAT LEVEL BADGE
@@ -334,6 +335,14 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 16px;
+  height: 270px;
+  position: relative;
+}
+.sd-chart-box canvas {
+  position: absolute;
+  inset: 46px 16px 16px 16px;
+  width: calc(100% - 32px) !important;
+  height: calc(100% - 62px) !important;
 }
 .sd-chart-box h3 {
   font-size: 0.76rem; font-weight: 700;

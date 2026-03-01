@@ -5,6 +5,7 @@
 
 const StatsService = (() => {
   let charts = {};
+  let _debTimer = null;
 
   const REGION_COLORS_MAP = {
     ISRAEL:      'rgba(255,34,0,0.75)',
@@ -43,7 +44,13 @@ const StatsService = (() => {
     const data   = labels.map(l => counts[l]);
     const colors = labels.map(l => REGION_COLORS_MAP[l] || 'rgba(160,160,160,0.6)');
 
-    destroyChart('region');
+    if (charts.region) {
+      charts.region.data.labels = labels;
+      charts.region.data.datasets[0].data = data;
+      charts.region.data.datasets[0].backgroundColor = colors;
+      charts.region.update('none');
+      return;
+    }
     const ctx = document.getElementById('chartRegion');
     if (!ctx) return;
     charts.region = new Chart(ctx, {
@@ -53,6 +60,7 @@ const StatsService = (() => {
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
+        animation: { duration: 400 },
         plugins: { legend: { display: false } },
         scales: {
           x: CHART_DEFAULTS.scales.x,
@@ -72,7 +80,11 @@ const StatsService = (() => {
     const data   = labels.map(l => counts[l]);
     const colors = labels.map(l => THREAT_COLORS[l]);
 
-    destroyChart('threat');
+    if (charts.threat) {
+      charts.threat.data.datasets[0].data = data;
+      charts.threat.update('none');
+      return;
+    }
     const ctx = document.getElementById('chartThreat');
     if (!ctx) return;
     charts.threat = new Chart(ctx, {
@@ -81,6 +93,7 @@ const StatsService = (() => {
       options: {
         responsive: true, maintainAspectRatio: false,
         cutout: '62%',
+        animation: { duration: 400 },
         plugins: {
           legend: { position: 'bottom', labels: { color: 'rgba(255,255,255,0.7)', font: {size:10}, padding: 10 } }
         }
@@ -98,7 +111,12 @@ const StatsService = (() => {
     const labels = sorted.map(x => x[0]);
     const data   = sorted.map(x => x[1]);
 
-    destroyChart('sources');
+    if (charts.sources) {
+      charts.sources.data.labels = labels;
+      charts.sources.data.datasets[0].data = data;
+      charts.sources.update('none');
+      return;
+    }
     const ctx = document.getElementById('chartSources');
     if (!ctx) return;
     charts.sources = new Chart(ctx, {
@@ -116,6 +134,7 @@ const StatsService = (() => {
       },
       options: {
         responsive: true, maintainAspectRatio: false,
+        animation: { duration: 400 },
         plugins: { legend: { display: false } },
         scales: CHART_DEFAULTS.scales,
       }
@@ -142,10 +161,13 @@ const StatsService = (() => {
 
   function update(articles) {
     if (!articles || !articles.length) return;
-    try { buildRegionChart(articles);  } catch(e) { console.warn('Region chart:', e); }
-    try { buildThreatChart(articles);  } catch(e) { console.warn('Threat chart:', e); }
-    try { buildSourcesChart(articles); } catch(e) { console.warn('Sources chart:', e); }
-    updateWidgets(articles);
+    clearTimeout(_debTimer);
+    _debTimer = setTimeout(function() {
+      try { buildRegionChart(articles);  } catch(e) { console.warn('Region chart:', e); }
+      try { buildThreatChart(articles);  } catch(e) { console.warn('Threat chart:', e); }
+      try { buildSourcesChart(articles); } catch(e) { console.warn('Sources chart:', e); }
+      updateWidgets(articles);
+    }, 120);
   }
 
   return { update };
