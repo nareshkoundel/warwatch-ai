@@ -11,11 +11,17 @@
 const NewsService = (() => {
 
   /* ---- CORS Proxy chain (tried in order) ---- */
+  // rss2json first — most reliable; allorigins/corsproxy as XML fallbacks
   const PROXIES = [
+    url => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}&count=40`,
     url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
     url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-    url => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}&count=40`
   ];
+  // Which proxy index returns JSON (not XML)
+  const JSON_PROXY_IDX = new Set([0]);
+  const PROXY_NAMES    = ['rss2json','allorigins','corsproxy'];
+  // Timeout per proxy attempt (ms)
+  const PROXY_TIMEOUTS = [8000, 5000, 5000];
 
   /* ---- All Sources ---- */
   const SOURCES = [
@@ -376,12 +382,12 @@ const NewsService = (() => {
     for (let pi = 0; pi < PROXIES.length; pi++) {
       const proxyUrl = PROXIES[pi](source.url);
       try {
-        const resp = await fetchWithTimeout(proxyUrl, 12000);
+        const resp = await fetchWithTimeout(proxyUrl, PROXY_TIMEOUTS[pi]);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const text = await resp.text();
 
-        /* -- Last proxy (rss2json) returns JSON -- */
-        if (pi === 2) {
+        /* -- rss2json returns JSON -- */
+        if (JSON_PROXY_IDX.has(pi)) {
           let data;
           try { data = JSON.parse(text); } catch(e) { throw new Error('JSON parse fail'); }
           if (data.status !== 'ok' || !Array.isArray(data.items)) throw new Error('rss2json empty');
@@ -431,7 +437,7 @@ const NewsService = (() => {
         return parseXML(text, source);
 
       } catch (e) {
-        console.warn(`[NewsService] ${source.name} proxy#${pi} (${['allorigins','corsproxy','rss2json'][pi]}): ${e.message}`);
+        console.warn(`[NewsService] ${source.name} proxy#${pi} (${PROXY_NAMES[pi]}): ${e.message}`);
       }
     }
     console.error(`[NewsService] ALL proxies failed for ${source.name}`);
