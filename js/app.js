@@ -111,7 +111,11 @@ window.__imgFb = function(img) {
     if (name === 'stats' && tabStats) {
       tabStats.style.display = '';
       statsVisible = true;
-      StatsService.update(allArticles);
+      // Wait one frame so flex layout gives canvas wrappers measured dimensions
+      requestAnimationFrame(function() {
+        StatsService.update(allArticles);
+        setTimeout(function(){ StatsService.resize(); }, 150);
+      });
     }
   }
 

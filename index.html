@@ -81,42 +81,56 @@
   <!-- ===== STATS TAB ===== -->
   <div class="tab-panel" id="tabStats" style="display:none">
     <div class="stats-dashboard">
-      <div class="sd-header">
-        <h2>📊 Conflict Intelligence Dashboard</h2>
-        <span class="sd-updated" id="sdUpdated">—</span>
+
+      <!-- KPI Row -->
+      <div class="sd-kpi-row">
+        <div class="sd-kpi">
+          <div class="sd-kpi-icon">🔥</div>
+          <div class="sd-kpi-body">
+            <div class="sd-kpi-label">Most Active</div>
+            <div class="sd-kpi-value" id="sdTopVal">—</div>
+          </div>
+        </div>
+        <div class="sd-kpi">
+          <div class="sd-kpi-icon">📰</div>
+          <div class="sd-kpi-body">
+            <div class="sd-kpi-label">Total Stories</div>
+            <div class="sd-kpi-value" id="sdTotalVal">0</div>
+          </div>
+        </div>
+        <div class="sd-kpi sd-kpi-red">
+          <div class="sd-kpi-icon">🔴</div>
+          <div class="sd-kpi-body">
+            <div class="sd-kpi-label">Critical Alerts</div>
+            <div class="sd-kpi-value" id="sdCriticalVal">0</div>
+          </div>
+        </div>
+        <div class="sd-kpi sd-kpi-orange">
+          <div class="sd-kpi-icon">⚡</div>
+          <div class="sd-kpi-body">
+            <div class="sd-kpi-label">Breaking (1h)</div>
+            <div class="sd-kpi-value" id="sdBreakingVal">0</div>
+          </div>
+        </div>
+        <div class="sd-kpi-updated" id="sdUpdated">—</div>
       </div>
-      <div class="sd-top-widgets">
-        <div class="sd-widget" id="sdTopConflict">
-          <div class="sdw-label">🔥 Most Active Today</div>
-          <div class="sdw-value" id="sdTopVal">—</div>
-        </div>
-        <div class="sd-widget">
-          <div class="sdw-label">📰 Total Stories</div>
-          <div class="sdw-value" id="sdTotalVal">0</div>
-        </div>
-        <div class="sd-widget">
-          <div class="sdw-label">🔴 Critical Alerts</div>
-          <div class="sdw-value" id="sdCriticalVal" style="color:#ff2200">0</div>
-        </div>
-        <div class="sd-widget">
-          <div class="sdw-label">⚡ Breaking (1h)</div>
-          <div class="sdw-value" id="sdBreakingVal" style="color:#ff6b00">0</div>
-        </div>
-      </div>
+
+      <!-- Charts Grid -->
       <div class="sd-charts">
         <div class="sd-chart-box">
-          <h3>Stories by Region</h3>
-          <canvas id="chartRegion"></canvas>
+          <div class="sd-chart-title">📍 Stories by Region</div>
+          <div class="sd-canvas-wrap"><canvas id="chartRegion"></canvas></div>
         </div>
         <div class="sd-chart-box">
-          <h3>Threat Level Distribution</h3>
-          <canvas id="chartThreat"></canvas>
+          <div class="sd-chart-title">🎯 Threat Distribution</div>
+          <div class="sd-canvas-wrap"><canvas id="chartThreat"></canvas></div>
         </div>
         <div class="sd-chart-box sd-chart-wide">
-          <h3>Source Breakdown</h3>
-          <canvas id="chartSources"></canvas>
+          <div class="sd-chart-title">📡 Top Sources</div>
+          <div class="sd-canvas-wrap"><canvas id="chartSources"></canvas></div>
         </div>
       </div>
+
     </div>
   </div>
 

@@ -62,8 +62,8 @@
   background: rgba(255,107,0,0.05);
 }
 
-.tab-panel { flex: 1; overflow: hidden; }
-#tabStats  { overflow-y: auto; }
+.tab-panel { flex: 1; overflow: hidden; min-height: 0; }
+#tabStats  { overflow: hidden; display: flex; flex-direction: column; }
 
 /* ================================================
    THREAT LEVEL BADGE
@@ -291,65 +291,101 @@
 .map-popup-link   { font-size: 0.7rem; color: var(--accent-blue); cursor: pointer; margin-top: 6px; display:block; }
 
 /* ================================================
-   STATISTICS DASHBOARD
+   STATISTICS DASHBOARD  —  Power-BI fixed layout
    ================================================ */
 .stats-dashboard {
-  padding: 20px;
-  height: calc(100vh - var(--header-height) - 50px - 46px - 48px);
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 10px 14px 6px;
+  gap: 10px;
+  overflow: hidden;
 }
-.sd-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
-}
-.sd-header h2 { font-size: 1rem; font-weight: 700; color: var(--text-primary); }
-.sd-updated   { font-size: 0.7rem; color: var(--text-muted); }
 
-.sd-top-widgets {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
+/* ---- KPI Row ---- */
+.sd-kpi-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  flex-shrink: 0;
+  height: 68px;
 }
-@media (max-width: 900px) { .sd-top-widgets { grid-template-columns: repeat(2,1fr); } }
-
-.sd-widget {
+.sd-kpi {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 14px 16px;
-  text-align: center;
+  padding: 0 14px;
+  border-left: 3px solid var(--accent2);
 }
-.sdw-label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-.sdw-value { font-size: 1.4rem; font-weight: 800; font-family: var(--font-orb); color: var(--text-primary); }
+.sd-kpi-red    { border-left-color: #ff2200; }
+.sd-kpi-orange { border-left-color: #ff6b00; }
+.sd-kpi-icon   { font-size: 1.3rem; flex-shrink: 0; }
+.sd-kpi-label  { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+.sd-kpi-value  { font-size: 1.35rem; font-weight: 800; font-family: var(--font-orb); color: var(--text-primary); line-height: 1.1; }
+.sd-kpi-updated {
+  display: flex; align-items: center;
+  font-size: 0.62rem; color: var(--text-muted);
+  white-space: nowrap; padding: 0 4px;
+  flex-shrink: 0;
+}
 
+/* ---- Charts Grid ---- */
 .sd-charts {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  grid-template-rows: 1fr auto;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
 }
-@media (max-width: 900px) { .sd-charts { grid-template-columns: 1fr; } }
 
 .sd-chart-box {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 16px;
-  height: 270px;
+  padding: 10px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.sd-chart-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  flex-shrink: 0;
+  margin-bottom: 6px;
+}
+.sd-canvas-wrap {
   position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
-.sd-chart-box canvas {
-  position: absolute;
-  inset: 46px 16px 16px 16px;
-  width: calc(100% - 32px) !important;
-  height: calc(100% - 62px) !important;
+.sd-canvas-wrap canvas {
+  position: absolute !important;
+  top: 0; left: 0;
+  width: 100% !important;
+  height: 100% !important;
 }
-.sd-chart-box h3 {
-  font-size: 0.76rem; font-weight: 700;
-  color: var(--text-secondary); margin-bottom: 14px;
-  text-transform: uppercase; letter-spacing: 0.8px;
+.sd-chart-wide {
+  grid-column: 1 / -1;
+  height: 160px;
+  flex-shrink: 0;
 }
-.sd-chart-wide { grid-column: 1 / -1; }
+
+@media (max-width: 860px) {
+  .sd-charts { grid-template-columns: 1fr; }
+  .sd-kpi-row { height: auto; flex-wrap: wrap; }
+  .sd-kpi { flex: 1 1 45%; height: 60px; }
+}
 
 /* ================================================
    MODALS

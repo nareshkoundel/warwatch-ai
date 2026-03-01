@@ -170,5 +170,9 @@ const StatsService = (() => {
     }, 120);
   }
 
-  return { update };
+  function resize() {
+    Object.values(charts).forEach(function(c) { try { c.resize(); } catch(e){} });
+  }
+
+  return { update, resize };
 })();
