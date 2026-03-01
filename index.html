@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WarWatch AI — Global Conflict News</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/features.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Leaflet map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- ResponsiveVoice — free Hindi Male + multilingual TTS -->
+  <script src="https://code.responsivevoice.org/responsivevoice.js?key=FREE"></script>
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="site-header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">WAR<span class="accent">WATCH</span> AI</span>
+      </div>
+      <div class="live-badge">
+        <span class="pulse-dot"></span>LIVE
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="ticker-wrapper">
+        <span class="ticker-label">BREAKING</span>
+        <div class="ticker-track" id="breakingTicker">
+          <span id="tickerContent">Loading latest world news...</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="clock" id="liveClock">00:00:00 UTC</div>
+      <button class="hdr-icon-btn voice-key-btn" id="btnVoiceKey" title="Activate deep AI voice">🎙️ AI Voice</button>
+      <button class="hdr-icon-btn" id="btnAmbient" title="Toggle ambient war-room sound">🔇</button>
+      <button class="hdr-icon-btn" id="btnNotify"  title="Enable breaking news alerts">🔔</button>
+      <button class="hdr-icon-btn" id="btnShortcuts" title="Keyboard shortcuts (?)" >⌨️</button>
+      <button class="refresh-btn"  id="refreshBtn"  title="Refresh news">&#x21BB; Refresh</button>
+    </div>
+  </header>
+
+  <!-- ===== REGION FILTERS ===== -->
+  <nav class="region-nav" id="regionNav">
+    <button class="region-btn active" data-region="ALL">🌍 All Wars</button>
+    <button class="region-btn" data-region="MIDDLE_EAST">🕌 Middle East</button>
+    <button class="region-btn" data-region="ISRAEL">✡️ Israel / Gaza</button>
+    <button class="region-btn" data-region="IRAN">🇮🇷 Iran</button>
+    <button class="region-btn" data-region="UKRAINE">🇺🇦 Ukraine / Russia</button>
+    <button class="region-btn" data-region="PAKISTAN">🇵🇰 Pakistan</button>
+    <button class="region-btn" data-region="AFGHANISTAN">🇦🇫 Afghanistan</button>
+    <button class="region-btn" data-region="USA">🇺🇸 USA / NATO</button>
+    <button class="region-btn" data-region="WORLD">🌐 Global</button>
+  </nav>
+
+  <!-- ===== TAB BAR ===== -->
+  <div class="tab-bar" id="tabBar">
+    <button class="tab-btn active" data-tab="main">📺 News &amp; Video</button>
+    <button class="tab-btn" data-tab="map">🗺️ World Map</button>
+    <button class="tab-btn" data-tab="stats">📊 Statistics</button>
+  </div>
+
+  <!-- ===== MAP TAB ===== -->
+  <div class="tab-panel" id="tabMap" style="display:none">
+    <div id="worldMap"></div>
+    <div class="map-legend" id="mapLegend">
+      <div class="ml-title">⚡ Active Conflict Zones</div>
+      <div class="ml-items" id="mlItems"></div>
+    </div>
+  </div>
+
+  <!-- ===== STATS TAB ===== -->
+  <div class="tab-panel" id="tabStats" style="display:none">
+    <div class="stats-dashboard">
+      <div class="sd-header">
+        <h2>📊 Conflict Intelligence Dashboard</h2>
+        <span class="sd-updated" id="sdUpdated">—</span>
+      </div>
+      <div class="sd-top-widgets">
+        <div class="sd-widget" id="sdTopConflict">
+          <div class="sdw-label">🔥 Most Active Today</div>
+          <div class="sdw-value" id="sdTopVal">—</div>
+        </div>
+        <div class="sd-widget">
+          <div class="sdw-label">📰 Total Stories</div>
+          <div class="sdw-value" id="sdTotalVal">0</div>
+        </div>
+        <div class="sd-widget">
+          <div class="sdw-label">🔴 Critical Alerts</div>
+          <div class="sdw-value" id="sdCriticalVal" style="color:#ff2200">0</div>
+        </div>
+        <div class="sd-widget">
+          <div class="sdw-label">⚡ Breaking (1h)</div>
+          <div class="sdw-value" id="sdBreakingVal" style="color:#ff6b00">0</div>
+        </div>
+      </div>
+      <div class="sd-charts">
+        <div class="sd-chart-box">
+          <h3>Stories by Region</h3>
+          <canvas id="chartRegion" height="220"></canvas>
+        </div>
+        <div class="sd-chart-box">
+          <h3>Threat Level Distribution</h3>
+          <canvas id="chartThreat" height="220"></canvas>
+        </div>
+        <div class="sd-chart-box sd-chart-wide">
+          <h3>Source Breakdown</h3>
+          <canvas id="chartSources" height="180"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MAIN TAB ===== -->
+  <div class="tab-panel" id="tabMain">
+  <!-- ===== MAIN LAYOUT ===== -->
+  <main class="main-layout">
+
+    <!-- Left: Video Player -->
+    <section class="video-section">
+      <div class="video-player" id="videoPlayer">
+        <canvas id="newsCanvas" width="800" height="450"></canvas>
+
+        <div class="video-overlay" id="videoOverlay">
+          <div class="vo-region" id="voRegion">WORLD</div>
+          <div class="vo-source" id="voSource">Loading…</div>
+          <div class="vo-headline" id="voHeadline">Select a news item to play ►</div>
+          <div class="vo-body" id="voBody"></div>
+          <div class="vo-time" id="voTime"></div>
+        </div>
+
+        <div class="video-controls" id="videoControls">
+          <button class="ctrl-btn" id="btnPlayPause" title="Play / Pause [Space]">▶</button>
+          <button class="ctrl-btn" id="btnReplay"    title="Replay [←]">↺</button>
+          <button class="ctrl-btn" id="btnNext"      title="Next Story [→]">⏭</button>
+          <div class="progress-bar-wrapper" id="progressWrapper">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+          <select class="ctrl-select" id="speedSelect" title="Playback speed">
+            <option value="0.5">0.5×</option>
+            <option value="1" selected>1×</option>
+            <option value="1.5">1.5×</option>
+            <option value="2">2×</option>
+          </select>
+          <button class="ctrl-btn" id="btnMute"     title="Mute / Unmute [M]">🔊</button>
+          <button class="ctrl-btn" id="btnAutoPlay" title="Auto-play on/off">AUTO ✓</button>
+          <button class="ctrl-btn" id="btnShare"    title="Share this story">📤</button>
+        </div>
+
+        <div class="video-loading" id="videoLoading">
+          <div class="spinner"></div>
+          <p>AI generating video…</p>
+        </div>
+      </div>
+
+      <!-- AI Summary Panel -->
+      <div class="ai-summary-panel" id="aiSummaryPanel">
+        <div class="asp-header">
+          <span class="ai-badge">🤖 AI SUMMARY</span>
+          <span class="threat-badge" id="aspThreat" data-level="LOW">LOW</span>
+          <span class="asp-title" id="aspTitle">—</span>
+        </div>
+        <p class="asp-body" id="aspBody">Click any news card to start the AI-generated short video &amp; summary.</p>
+        <div class="asp-tags" id="aspTags"></div>
+        <div class="asp-actions">
+          <a class="asp-source-link" id="aspLink" href="#" target="_blank" rel="noopener">Read full article ↗</a>
+          <button class="asp-btn" id="btnTranslate">🌐 Translate</button>
+          <button class="asp-btn" id="btnCompare">⚖️ Compare Sources</button>
+          <button class="asp-btn" id="btnShareCard">📤 Share</button>
+        </div>
+        <div class="translate-result" id="translateResult" style="display:none">
+          <div class="tr-header"><span>🌐 Translation</span><button class="tr-close" id="trClose">✕</button></div>
+          <p id="translateText"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: News Feed -->
+    <section class="feed-section">
+      <div class="feed-header">
+        <h2 class="feed-title">📡 Live War &amp; Conflict Feed</h2>
+        <div class="feed-header-right">
+          <span class="feed-count" id="feedCount">0 stories</span>
+          <div class="view-mode-btns" id="viewModeBtns">
+            <button class="vm-btn active" data-mode="list" title="List view">☰</button>
+            <button class="vm-btn" data-mode="grid" title="Grid view">⊞</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feed-search">
+        <input type="text" id="searchInput" placeholder="🔍 Search stories, regions, keywords…" />
+      </div>
+
+      <div class="news-feed" id="newsFeed">
+        <div class="skeleton-loader">
+          <div class="sk-card"></div>
+          <div class="sk-card"></div>
+          <div class="sk-card"></div>
+          <div class="sk-card"></div>
+          <div class="sk-card"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+  </div><!-- /tabMain -->
+
+  <!-- ===== STATS BAR ===== -->
+  <footer class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-label">Active Conflicts</span>
+      <span class="stat-value" id="statConflicts">12</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Sources Live</span>
+      <span class="stat-value" id="statSources">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Stories Today</span>
+      <span class="stat-value" id="statStories">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">🟠 Reddit Posts</span>
+      <span class="stat-value" id="statReddit" style="color:#ff4500">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">✈️ Telegram Posts</span>
+      <span class="stat-value" id="statTelegram" style="color:#29b6f6">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Last Updated</span>
+      <span class="stat-value" id="statUpdated">—</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">AI Engine</span>
+      <span class="stat-value accent">Active ✓</span>
+    </div>
+    <div class="footer-credit">WarWatch AI © 2026 — All content sourced from public RSS feeds</div>
+  </footer>
+
+  <!-- ===== NOTIFICATION TOAST ===== -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ===== KEYBOARD SHORTCUTS OVERLAY ===== -->
+  <div class="modal-backdrop" id="shortcutsModal" style="display:none">
+    <div class="modal-box shortcuts-box">
+      <div class="modal-header">
+        <span>⌨️ Keyboard Shortcuts</span>
+        <button class="modal-close" id="shortcutsClose">✕</button>
+      </div>
+      <div class="shortcuts-grid">
+        <div class="sk-row"><kbd>Space</kbd><span>Play / Pause video</span></div>
+        <div class="sk-row"><kbd>→</kbd><span>Next story</span></div>
+        <div class="sk-row"><kbd>←</kbd><span>Replay current story</span></div>
+        <div class="sk-row"><kbd>M</kbd><span>Mute / Unmute TTS</span></div>
+        <div class="sk-row"><kbd>A</kbd><span>Toggle ambient sound</span></div>
+        <div class="sk-row"><kbd>S</kbd><span>Share current story</span></div>
+        <div class="sk-row"><kbd>T</kbd><span>Translate current story</span></div>
+        <div class="sk-row"><kbd>C</kbd><span>Compare sources</span></div>
+        <div class="sk-row"><kbd>1</kbd><span>Switch to News &amp; Video tab</span></div>
+        <div class="sk-row"><kbd>2</kbd><span>Switch to World Map tab</span></div>
+        <div class="sk-row"><kbd>3</kbd><span>Switch to Statistics tab</span></div>
+        <div class="sk-row"><kbd>?</kbd><span>Toggle this overlay</span></div>
+        <div class="sk-row"><kbd>G</kbd><span>Toggle Grid / List view</span></div>
+        <div class="sk-row"><kbd>Esc</kbd><span>Close any modal</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== COMPARE MODAL ===== -->
+  <div class="modal-backdrop" id="compareModal" style="display:none">
+    <div class="modal-box compare-box">
+      <div class="modal-header">
+        <span>⚖️ Side-by-Side Source Compare</span>
+        <button class="modal-close" id="compareClose">✕</button>
+      </div>
+      <div class="compare-query" id="compareQuery">Loading…</div>
+      <div class="compare-grid" id="compareGrid"></div>
+    </div>
+  </div>
+
+  <!-- ===== AI VOICE KEY MODAL ===== -->
+  <div class="modal-backdrop" id="voiceKeyModal" style="display:none">
+    <div class="modal-box voice-key-box">
+      <div class="modal-header">
+        <span>🎙️ Activate Deep Indian AI Voice</span>
+        <button class="modal-close" id="voiceKeyClose">✕</button>
+      </div>
+      <div class="vk-body">
+        <div class="vk-status" id="vkStatus">
+          <span class="vk-dot"></span>
+          <span id="vkStatusText">Using built-in voice engine</span>
+        </div>
+        <div class="vk-tiers">
+          <div class="vk-tier active" id="vkTierFree">
+            <div class="vkt-badge">✅ ACTIVE NOW</div>
+            <div class="vkt-name">🔊 Hindi Male Voice</div>
+            <div class="vkt-desc">Deep Indian male broadcaster voice. No setup needed — working right now.</div>
+          </div>
+          <div class="vk-tier" id="vkTierEl">
+            <div class="vkt-badge" id="vkElBadge">⚡ UPGRADE</div>
+            <div class="vkt-name">🎙️ ElevenLabs Neural Voice</div>
+            <div class="vkt-desc">Ultra-realistic deep Indian AI voice (Aravind). Free — 10,000 chars/month.</div>
+            <div class="vk-step">Step 1: <a href="https://elevenlabs.io/sign-up" target="_blank" class="vk-link">Create free account at ElevenLabs ↗</a></div>
+            <div class="vk-step">Step 2: <a href="https://elevenlabs.io/app/settings/api-keys" target="_blank" class="vk-link">Copy your API key ↗</a></div>
+            <div class="vk-step">Step 3: Paste it below and click Activate:</div>
+            <div class="vk-input-row">
+              <input type="password" id="vkKeyInput" class="vk-input" placeholder="Paste ElevenLabs API key here…" />
+              <button class="vk-activate-btn" id="vkActivateBtn">Activate</button>
+              <button class="vk-clear-btn" id="vkClearBtn" title="Remove key">✕</button>
+            </div>
+            <div class="vk-feedback" id="vkFeedback"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ambient audio indicator -->
+  <div class="ambient-indicator" id="ambientIndicator">
+    <div class="amb-wave">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    WAR-ROOM AUDIO ON
+  </div>
+
+  <!-- ===== SCRIPTS ===== -->
+  <script src="js/newsService.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/voice.js"></script>
+  <script src="js/videoPlayer.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/stats.js"></script>
+  <script src="js/translate.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
