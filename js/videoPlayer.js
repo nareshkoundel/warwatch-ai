@@ -34,7 +34,7 @@ const VideoPlayer = (() => {
   let currentArticle = null;
   let animFrame      = null;
   let startTime      = null;
-  let duration       = 18000;  // 18 s per story
+  let duration       = 40000;  // 40 s per story
   let isPlaying      = false;
   let isMuted        = false;
   let autoPlay       = true;
@@ -60,10 +60,10 @@ const VideoPlayer = (() => {
         const now         = performance.now();
         const oldElapsed  = Math.min(now - startTime, duration);
         const fraction    = oldElapsed / duration;
-        duration          = Math.round(18000 / newFactor);
+        duration          = Math.round(40000 / newFactor);
         startTime         = now - fraction * duration;
       } else {
-        duration = Math.round(18000 / newFactor);
+        duration = Math.round(40000 / newFactor);
       }
       speedFactor = newFactor;
       VoiceService.setRate(speedFactor);
@@ -453,7 +453,7 @@ const VideoPlayer = (() => {
 
   function setSpeed(val) {
     speedFactor = parseFloat(val) || 1;
-    duration = Math.round(18000 / speedFactor);
+    duration = Math.round(40000 / speedFactor);
     VoiceService.setRate(speedFactor);
   }
 
