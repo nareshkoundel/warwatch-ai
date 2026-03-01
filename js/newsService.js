@@ -226,10 +226,18 @@ const NewsService = (() => {
     const ctx  = ctxMap[article.region] || 'In a recent development,';
     const desc = article.description;
     if (!desc || desc.length < 30) {
-      return `${ctx} ${article.title}. Analysts are closely monitoring the situation for further escalation or diplomatic developments.`;
+      return `${ctx} ${article.title}. Analysts are closely monitoring the situation for further escalation or diplomatic developments. No further details have been confirmed at this time.`;
     }
-    const sentences = desc.split(/[.!?]+\s+/);
-    return `${ctx} ${sentences.slice(0, 3).join('. ')}.`;
+    // Split on sentence boundaries, filter out empty/short fragments
+    const sentences = desc
+      .split(/(?<=[.!?])\s+/)
+      .map(s => s.trim())
+      .filter(s => s.length > 20);
+    const body = sentences.slice(0, 6).join(' ');
+    const closing = sentences.length < 3
+      ? ' Authorities and international observers are closely watching for further developments.'
+      : '';
+    return `${ctx} ${body}${closing}`;
   }
 
   /* ----------------------------------------
@@ -395,7 +403,7 @@ const NewsService = (() => {
             .filter(i => i.title && isWarRelated(i.title, i.description, source.primaryRegion))
             .map((item, idx) => {
               const title = stripHtml(item.title);
-              const desc  = stripHtml(item.description || item.content || '').slice(0, 500);
+              const desc  = stripHtml(item.description || item.content || '').slice(0, 11500);
               const region = tagRegion(title, desc);
               const fr = (region === 'WORLD' && source.primaryRegion !== 'WORLD') ? source.primaryRegion : region;
 

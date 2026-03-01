@@ -376,10 +376,12 @@ const VideoPlayer = (() => {
       `<span class="tag">${t}</span>`
     ).join('');
 
-    // TTS — read headline + summary
-    const speakText = `Breaking news from ${article.region.replace('_',' ')}. 
+    // TTS — read headline + full summary + source credit
+    const speakText = `Breaking news from ${article.region.replace(/_/g,' ')}. 
+                       Reported by ${article.source}. 
                        ${article.title}. 
-                       ${article.aiSummary}`;
+                       ${article.aiSummary} 
+                       Stay with WarWatch AI for continuing coverage.`;
     setTimeout(() => speak(speakText), 700);
 
     // Start render loop
